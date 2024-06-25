@@ -104,8 +104,8 @@ def projectPom = {
 ext {
     group = artioGroup
     isReleaseVersion = !version.endsWith("SNAPSHOT")
-    releasesRepoUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
-    snapshotsRepoUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
+    releasesRepoUrl = 'http://localhost:8081/artifactory/test-maven-repo/'
+    snapshotsRepoUrl = 'http://localhost:8081/artifactory/test-maven-repo/'
     iLink3Enabled = Boolean.getBoolean("fix.core.iLink3Enabled")
 
     if (!project.hasProperty('repoUsername')) {
@@ -943,6 +943,7 @@ subprojects {
         repositories {
             maven {
                 name = 'oss'
+                allowInsecureProtocol = true
                 url = !isReleaseVersion ? snapshotsRepoUrl : releasesRepoUrl
                 credentials {
                     username = repoUsername
@@ -951,10 +952,11 @@ subprojects {
             }
             maven {
                 name = 'private'
-                url = 's3://artio-repository/releases'
-                credentials(AwsCredentials) {
-                    accessKey = awsAccessKeyId
-                    secretKey = awsSecretAccessKey
+                allowInsecureProtocol = true
+                url = 'http://localhost:8081/artifactory/test-private-maven-rep/'
+                credentials {
+                    username = repoUsername
+                    password = repoPassword
                 }
             }
         }
