@@ -955,8 +955,8 @@ subprojects {
                 allowInsecureProtocol = true
                 url = 'http://localhost:8081/artifactory/test-private-maven-rep/'
                 credentials {
-                    username = repoUsername
-                    password = repoPassword
+                    username = awsAccessKeyId
+                    password = awsSecretAccessKey
                 }
             }
         }
