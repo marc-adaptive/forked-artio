@@ -291,7 +291,6 @@ subprojects {
         if (signingKey != null) {
             useInMemoryPgpKeys(signingKey, signingPassword)
         }
-        required { isReleaseVersion && gradle.taskGraph.hasTask("uploadArchives") }
         sign configurations.archives
     }
 

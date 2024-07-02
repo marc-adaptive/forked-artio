@@ -1,15 +1,10 @@
 name: Release
 
-
 on:
   workflow_dispatch:
     inputs:
-      run-ci:
-        description: Run ci and test workflows
-        required: true
-        type: boolean
       release:
-        description: Is release? (Will update tags and version)
+        description: Is release? (Will create tag and update version)
         required: true
         default: false
         type: boolean
@@ -30,16 +25,15 @@ env:
   GRADLE_OPTS: '-Dorg.gradle.daemon=false -Dorg.gradle.java.installations.auto-detect=false -Dorg.gradle.warning.mode=fail'
 
 jobs:
-  run-release-ci:
-    name: Run ci workflows
-    uses: ./.github/workflows/pre-release-ci.yml
-    with:
-      run-ci: ${{ inputs.run-ci }}
-      codeql: ${{ inputs.run-ci }}
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  codeql:
+    uses: ./.github/workflows/codeql.yml
 
   pre-release:
     name: Update version, tag repo, and return sha
-    needs: run-release-ci
+    needs: [ ci, codeql ]
     uses: ./.github/workflows/pre-release.yml
     with:
       release: ${{ inputs.release }}
@@ -48,7 +42,7 @@ jobs:
   release:
     name: Release java artifacts
     permissions:
-      contents: write
+      contents: read
       packages: write
     needs: pre-release
     runs-on: self-hosted
