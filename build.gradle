@@ -38,11 +38,11 @@ plugins {
 
 def checkstyleVersion = '9.3'
 def hamcrestVersion = '2.2'
-def junitVersion = '5.10.2'
+def junitVersion = '5.10.3'
 def mockitoVersion = '4.11.0'
 def hdrHistogramVersion = '2.2.2'
 def jmhVersion = '1.37'
-def byteBuddyVersion = '1.14.16'
+def byteBuddyVersion = '1.14.18'
 
 def agronaVersion = '1.21.2'
 def sbeVersion = '1.31.1'
@@ -180,10 +180,12 @@ subprojects {
     dependencies {
         testImplementation "org.hamcrest:hamcrest:${hamcrestVersion}"
         testImplementation "org.mockito:mockito-core:${mockitoVersion}"
-        testImplementation "org.junit.jupiter:junit-jupiter:${junitVersion}"
+        testImplementation platform("org.junit:junit-bom:${junitVersion}")
+
+        testImplementation "org.junit.jupiter:junit-jupiter"
         testImplementation "junit:junit:4.13.2" // FIXME: Remove after migration to JUnit 5 is complete
         testRuntimeOnly "org.junit.platform:junit-platform-launcher"
-        testRuntimeOnly "org.junit.vintage:junit-vintage-engine:${junitVersion}"
+        testRuntimeOnly "org.junit.vintage:junit-vintage-engine"
     }
 
     checkstyle.toolVersion = "${checkstyleVersion}"
@@ -984,4 +986,17 @@ tasks.register('copyTestLogs', Copy) {
     into 'build/test_logs'
 
     includeEmptyDirs = false
+}
+
+def isNonStable = { String version ->
+    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
+    def regex = /^[0-9,.v-]+(-r)?$/
+    return !stableKeyword && !(version ==~ regex)
+}
+
+tasks.named('dependencyUpdates').configure {
+    // Reject all non stable versions
+    rejectVersionIf {
+        isNonStable(it.candidate.version)
+    }
 }
