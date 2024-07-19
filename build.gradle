@@ -32,7 +32,6 @@ buildscript {
 
 plugins {
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
-    id 'net.researchgate.release' version '2.8.1'
     id 'com.github.ben-manes.versions' version '0.51.0'
 }
 
@@ -121,13 +120,6 @@ ext {
 
     if (!project.hasProperty('signingPassword')) {
         signingPassword = null
-    }
-}
-
-release {
-    versionPropertyFile = 'version.txt'
-    git {
-        requireBranch = ''
     }
 }
 
