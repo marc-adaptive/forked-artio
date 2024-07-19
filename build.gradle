@@ -32,6 +32,7 @@ buildscript {
 
 plugins {
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
+    id 'net.researchgate.release' version '2.8.1'
     id 'com.github.ben-manes.versions' version '0.51.0'
 }
 
@@ -47,7 +48,7 @@ def agronaVersion = '1.21.2'
 def sbeVersion = '1.31.1'
 def aeronVersion = '1.44.1'
 def artioGroup = 'uk.co.real-logic'
-def artioVersion = file('version.txt').text.trim()
+def iLink3Enabled = false
 
 defaultTasks 'clean', 'build'
 
@@ -101,9 +102,9 @@ def projectPom = {
 
 ext {
     group = artioGroup
-    isReleaseVersion = !artioVersion.endsWith("SNAPSHOT")
-    releasesRepoUrl = 'http://localhost:8081/artifactory/test-maven-repo/'
-    snapshotsRepoUrl = 'http://localhost:8081/artifactory/test-maven-repo/'
+    isReleaseVersion = !version.endsWith("SNAPSHOT")
+    repoUrl = 'http://localhost:8081/artifactory/test-maven-repo/'
+    snapshotUrl = 'http://localhost:8081/artifactory/test-maven-repo/'
     iLink3Enabled = Boolean.getBoolean("fix.core.iLink3Enabled")
 
     if (!project.hasProperty('repoUsername')) {
@@ -120,6 +121,12 @@ ext {
 
     if (!project.hasProperty('signingPassword')) {
         signingPassword = null
+    }
+}
+
+release {
+    git {
+        requireBranch = ''
     }
 }
 
@@ -153,7 +160,7 @@ subprojects {
     apply plugin: 'checkstyle'
 
     group = artioGroup
-    version = artioVersion
+    version = version
 
     def toolchainLauncher = javaToolchains.launcherFor {
         languageVersion = JavaLanguageVersion.of(buildJavaVersion)
@@ -938,7 +945,7 @@ subprojects {
             maven {
                 name = 'oss'
                 allowInsecureProtocol = true
-                url = !isReleaseVersion ? snapshotsRepoUrl : releasesRepoUrl
+                url = !isReleaseVersion ? snapshotUrl : repoUrl
                 credentials {
                     username = repoUsername
                     password = repoPassword
@@ -947,10 +954,10 @@ subprojects {
             maven {
                 name = 'private'
                 allowInsecureProtocol = true
-                url = 'http://localhost:8081/artifactory/test-private-maven-rep/'
-                credentials {
-                    username = awsAccessKeyId
-                    password = awsSecretAccessKey
+                url = 's3://artio-repository/releases'
+                credentials(AwsCredentials) {
+                    accessKey = awsAccessKeyId
+                    secretKey = awsSecretAccessKey
                 }
             }
         }
